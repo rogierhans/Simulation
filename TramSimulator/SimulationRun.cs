@@ -191,6 +191,8 @@ namespace TramSimulator
             }
         }
         //Priority queue for events
+        //super lelijk O(n) maar n is altijd constant dus het valt mee
+        // SortedList en dergelijke zorgden voor problemen
         class PriorQ
         {
             public List<Event> eventList = new List<Event>();
@@ -200,7 +202,7 @@ namespace TramSimulator
             }
             public Event next()
             {
-                double minTime = 9999999999999999999;
+                double minTime = Int32.MaxValue;
                 int index = -1;
                 Event e = null;
                 for (int i=0; i < eventList.Count; i++)
