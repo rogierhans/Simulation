@@ -7,55 +7,94 @@ using System.Threading.Tasks;
 namespace TramSimulator
 {
 
-    class SimulationRun
+    static class SimulationRun
     {
 
-        enum eventType { PersonArrival, TramExpArrival, TramArrival, TramExpDeparture, TramDeparture };
-        PriorQ queue = new PriorQ();
-        double time = 0;
+        static PriorQ queue = new PriorQ();
+        static double time = 0;
 
-        double personRate = 10;
-        public void run()
+        static double personRate = 10;
+
+        static public void run()
         {
+            
             while (true)
             {
                 Event e = queue.next();
                 time = e.startTime;
-                switch (e.type)
-                {
-                    case eventType.PersonArrival:
-                        PersonArrival(e);
-                        break;
-                    case eventType.TramExpArrival:
-                        TramExpArrival(e);
-                        break;
-                    case eventType.TramArrival:
-                        TramArrival(e);
-                        break;
-                    case eventType.TramExpDeparture:
-                        TramExpDeparture(e);
-                        break;
-                    case eventType.TramDeparture:
-                        TramDeparture(e);
-                        break;
-
-                }
+                e.excute();
             }
         }
+        static public void setup() { }
 
         //Methods for the events
-        void PersonArrival(Event e)
+        class PersonArrival : Event
         {
-            double newTime = time + (LibraryRoutine.negexp(personRate));
-            Event newEvent = new Event(newTime, eventType.PersonArrival, null);
+            Station station;
+            public PersonArrival(double startTime, Station station)
+            {
+                this.startTime = startTime;
+                this.station = station;
+            }
+            public new void excute()
+            {
+                double newTime = time + (LibraryRoutine.negexp(station.arrivalRate));
+                Event newEvent = new PersonArrival(newTime, station);
 
-
+            }
         }
-        void TramExpArrival(Event e) { }
-        void TramArrival(Event e) { }
-        void TramExpDeparture(Event e) { }
-        void TramDeparture(Event e) { }
+        class TramExpArrival : Event
+        {
+            Tram tram;
+            public TramExpArrival(double startTime, Tram tram)
+            {
+                this.startTime = startTime;
+                this.tram = tram;
+            }
+            public new void excute()
+            {
 
+            }
+        }
+        class TramArrival : Event
+        {
+            Tram tram;
+            public TramArrival(double startTime, Tram tram)
+            {
+                this.startTime = startTime;
+                this.tram = tram;
+            }
+            public new void excute()
+            {
+
+            }
+        }
+        class TramExpDeparture : Event
+        {
+            Tram tram;
+            public TramExpDeparture(double startTime, Tram tram)
+            {
+                this.startTime = startTime;
+                this.tram = tram;
+            }
+            public new void excute()
+            {
+
+            }
+        }
+        class TramDeparture : Event
+        {
+            Tram tram;
+            public TramDeparture(double startTime, Tram tram)
+            {
+                this.startTime = startTime;
+                this.tram = tram;
+            }
+            public new void excute()
+            {
+
+            }
+        }
         //Priority queue for events
         class PriorQ
         {
@@ -76,14 +115,7 @@ namespace TramSimulator
         class Event
         {
             public double startTime;
-            public eventType type;
-            Tram tram;
-            public Event(double time, eventType type, Tram tram)
-            {
-                this.startTime = time;
-                this.type = type;
-                this.tram = tram;
-            }
+            public void excute() { }
         }
 
         class Person
@@ -112,8 +144,10 @@ namespace TramSimulator
         class Station
         {
             Queue<Person> waitingPersons;
-            public Station()
+            public double arrivalRate;
+            public Station(double arrivalRate)
             {
+                this.arrivalRate = arrivalRate;
                 waitingPersons = new Queue<Person>();
             }
 
