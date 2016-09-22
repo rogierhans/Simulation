@@ -13,8 +13,11 @@ namespace TramSimulator
     class Program
     {
         static void Main(string[] args)
-        {
 
+
+        {
+            SimulationRun.run();
+            return;
             //We probably want a different method of input for the file paths
             Console.WriteLine("Enter a file path");
             String path = Console.ReadLine();
