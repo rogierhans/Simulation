@@ -17,7 +17,7 @@ namespace TramSimulator
 
         static public void run()
         {
-            
+            setup();
             while (true)
             {
                 Event e = queue.next();
@@ -25,9 +25,10 @@ namespace TramSimulator
                 e.excute();
             }
         }
-        static public void setup() { }
+        static public void setup() {
 
-        //Methods for the events
+       }
+
         class PersonArrival : Event
         {
             Station station;
@@ -53,7 +54,10 @@ namespace TramSimulator
             }
             public new void excute()
             {
-
+                if (tram.nextTram.currentTrack != tram.currentTrack && !(tram.nextTram.currentTrack.nextStation == tram.currentTrack && tram.nextTram.onStation))
+                    queue.addEvent(new TramArrival(startTime, tram));
+                else
+                    tram.waitingOnNextTram = true;
             }
         }
         class TramArrival : Event
@@ -66,7 +70,11 @@ namespace TramSimulator
             }
             public new void excute()
             {
-
+                double dwellTime = 10; // hier moet dus nog iets zinnigs komen te staan
+                double newTime = time + dwellTime;
+                tram.currentTrack = tram.currentTrack.nextStation;
+                tram.onStation = true;
+                queue.addEvent(new TramExpDeparture(newTime, tram));
             }
         }
         class TramExpDeparture : Event
@@ -79,7 +87,16 @@ namespace TramSimulator
             }
             public new void excute()
             {
-
+                if (tram.nextTram.currentTrack == tram.currentTrack)
+                {
+                    double departureDifference = time - tram.nextTram.departureTime;
+                    if (departureDifference < 40)
+                    {
+                        queue.addEvent(new TramExpDeparture(time + (40 - departureDifference), tram));
+                        return;
+                    }
+                }
+                queue.addEvent(new TramDeparture(time, tram));
             }
         }
         class TramDeparture : Event
@@ -92,7 +109,14 @@ namespace TramSimulator
             }
             public new void excute()
             {
-
+                tram.onStation = false;
+                tram.departureTime = time;
+                if (tram.previousTram.waitingOnNextTram && tram.previousTram.currentTrack.nextStation == tram.currentTrack) {
+                    tram.previousTram.waitingOnNextTram = false;
+                    double queueDelay = 0;//Hoe lang het duurt om op het station te komen als er een voor hem was
+                    queue.addEvent(new TramExpArrival(time + queueDelay, tram.previousTram));
+                }
+                queue.addEvent(new TramExpArrival(time + tram.currentTrack.drivingTime(), tram));
             }
         }
         //Priority queue for events
@@ -131,9 +155,12 @@ namespace TramSimulator
         // State of Tram includes station i and if it is on track between i and i+1
         class Tram
         {
-            Tram nextTram;
-            Station currentStation;
-            Boolean onTrack;
+            public Tram nextTram;
+            public Tram previousTram;
+            public Station currentTrack;
+            public bool onStation;
+            public bool waitingOnNextTram;
+            public double departureTime;
             List<Person> personsOnTram;
             public Tram(Tram nextTram)
             {
@@ -145,10 +172,17 @@ namespace TramSimulator
         {
             Queue<Person> waitingPersons;
             public double arrivalRate;
-            public Station(double arrivalRate)
+            public Station nextStation;
+            public double avgDrivingTime;
+            public Station(double arrivalRate, Station nextStation,double avgDrivingTime)
             {
                 this.arrivalRate = arrivalRate;
+                this.nextStation = nextStation;
                 waitingPersons = new Queue<Person>();
+            }
+            public double drivingTime() {
+                double drivingTime = LibraryRoutine.negexp(avgDrivingTime);
+                return drivingTime;
             }
 
         }
