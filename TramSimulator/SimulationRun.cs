@@ -33,14 +33,13 @@ namespace TramSimulator
                 for (int i = 0; i < stations.Length; i++)
                 {
                     Console.WriteLine("Station " + stations[i].name);
-                    Console.WriteLine("Mensen op het station "+stations[i].waitingPersons.Count);
+                    Console.WriteLine("Mensen op het station " + stations[i].waitingPersons.Count);
                 }
                 for (int i = 0; i < trams.Length; i++)
                 {
-                    Console.WriteLine("Tram"+ i + " op traject van station :" + trams[i].currentTrack.name);
-                    Console.WriteLine("Mensen in de tram "+trams[i].personsOnTram.Count);
+                    Console.WriteLine("Tram" + i + " op traject van station :" + trams[i].currentTrack.name);
+                    Console.WriteLine("Mensen in de tram " + trams[i].personsOnTram.Count);
                 }
-                Console.ReadLine();
             }
         }
         static public void setup()
@@ -49,7 +48,7 @@ namespace TramSimulator
             //verdient geen schoonheids prijs
             stations = new Station[8];
             for (int i = 0; i < stations.Length; i++)
-                stations[i] = new Station("Tram "+i,i, (double)1 / (double)((i + 1) * 10+ 1), 160, (double)1 / (double)8);
+                stations[i] = new Station(" " + i, i, (double)1 / (double)((i + 1) * 10 + 1), 30, (double)1 / (double)8);
 
             trams = new Tram[10];
             for (int i = 0; i < trams.Length; i++)
@@ -66,13 +65,13 @@ namespace TramSimulator
             }
             for (int i = 0; i < stations.Length; i++)
             {
-                    queue.addEvent(new PersonArrival(time + (LibraryRoutine.negexp(stations[i].arrivalRate)), stations[i]));
+                queue.addEvent(new PersonArrival(time + (LibraryRoutine.negexp(stations[i].arrivalRate)), stations[i]));
             }
 
 
 
         }
-        
+
         //event voor als een persoon aan komt op een bepaald station
         //creert ook de event voor de volgende 
         class PersonArrival : Event
@@ -106,8 +105,8 @@ namespace TramSimulator
             {
                 // Als zijn voorganger nog op de zelfde baan zit of op het volgede station
                 // dan kan de trein niet aankomen en wacht hij totdat de andere vertrekt
-                if (tram.nextTram().currentTrack == tram.currentTrack || (tram.nextTram().currentTrack.nextStation() == tram.currentTrack && tram.nextTram().onStation))
-                    tram.waitingOnNextTram = true; 
+                if ((tram.nextTram().currentTrack == tram.currentTrack && tram.departureTime > tram.nextTram().departureTime) || (tram.nextTram().currentTrack.nextStation() == tram.currentTrack && tram.nextTram().onStation))
+                    tram.waitingOnNextTram = true;
                 else
                     queue.addEvent(new TramArrival(startTime, tram));
             }
@@ -195,9 +194,10 @@ namespace TramSimulator
                 double minTime = eventList[0].startTime;
                 int index = 0;
                 Event e = eventList[0];
-                for (int i=1; i < eventList.Count; i++)
+                for (int i = 1; i < eventList.Count; i++)
                 {
-                    if( eventList[i].startTime < minTime) {
+                    if (eventList[i].startTime < minTime)
+                    {
                         index = i;
                         minTime = eventList[i].startTime;
                         e = eventList[i];
@@ -229,8 +229,6 @@ namespace TramSimulator
             {
                 this.arrivalTime = arrivalTime;
             }
-
-
         }
 
         // State of Tram includes station i and if it is on track between i and i+1
@@ -269,18 +267,13 @@ namespace TramSimulator
                 }
 
             }
-            public Tram nextTram() {
-                if ( 0 == index)
-                    return trams[trams.Length - 1];
-                else
-                    return trams[index -1];
-
+            public Tram nextTram()
+            {
+                return trams[(0 == index) ? trams.Length - 1 : index - 1];
             }
-            public Tram previousTram() {
-                if (trams.Length - 1 == index)
-                    return trams[0];
-                else
-                    return trams[index + 1];
+            public Tram previousTram()
+            {
+                return trams[(trams.Length - 1 == index) ? 0 : index + 1];
             }
         }
         class Station
@@ -291,7 +284,7 @@ namespace TramSimulator
             public int index;
             public double detrainRate;
             public String name; // good to know for sanity check
-            public Station(String name,int index, double arrivalRate, double avgDrivingTime, double detrainRate)
+            public Station(String name, int index, double arrivalRate, double avgDrivingTime, double detrainRate)
 
             {
                 this.name = name;
@@ -306,7 +299,8 @@ namespace TramSimulator
                 double drivingTime = avgDrivingTime;
                 return drivingTime;
             }
-            public Station nextStation() {
+            public Station nextStation()
+            {
                 if (index == stations.Length - 1)
                     return stations[0];
                 else
