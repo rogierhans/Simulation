@@ -49,25 +49,15 @@ namespace TramSimulator
             //verdient geen schoonheids prijs
             stations = new Station[8];
             for (int i = 0; i < stations.Length; i++)
-                stations[i] = new Station(i + "", (double)1 / (double)((i + 1) * 10+ 1), 160, (double)1 / (double)8);
-            for (int i = 0; i < stations.Length - 1; i++)
-                stations[i].nextStation = stations[i + 1];
-            stations[stations.Length - 1].nextStation = stations[0];
+                stations[i] = new Station("Tram "+i,i, (double)1 / (double)((i + 1) * 10+ 1), 160, (double)1 / (double)8);
 
             trams = new Tram[10];
             for (int i = 0; i < trams.Length; i++)
             {
-                trams[i] = new Tram();
+                trams[i] = new Tram(i);
                 trams[i].currentTrack = stations[stations.Length - 1];
                 trams[i].onStation = false;
             }
-            for (int i = 0; i < trams.Length - 1; i++)
-            {
-                trams[i + 1].nextTram = trams[i];
-                trams[i].previousTram = trams[i + 1];
-            }
-            trams[trams.Length - 1].previousTram = trams[0];
-            trams[0].nextTram = trams[trams.Length - 1];
 
             queue.addEvent(new TramArrival(0, trams[0]));
             for (int i = 1; i < trams.Length; i++)
@@ -116,7 +106,7 @@ namespace TramSimulator
             {
                 // Als zijn voorganger nog op de zelfde baan zit of op het volgede station
                 // dan kan de trein niet aankomen en wacht hij totdat de andere vertrekt
-                if (tram.nextTram.currentTrack == tram.currentTrack || (tram.nextTram.currentTrack.nextStation == tram.currentTrack && tram.nextTram.onStation))
+                if (tram.nextTram().currentTrack == tram.currentTrack || (tram.nextTram().currentTrack.nextStation() == tram.currentTrack && tram.nextTram().onStation))
                     tram.waitingOnNextTram = true; 
                 else
                     queue.addEvent(new TramArrival(startTime, tram));
@@ -134,7 +124,7 @@ namespace TramSimulator
             }
             public override void execute()
             {
-                tram.currentTrack = tram.currentTrack.nextStation;
+                tram.currentTrack = tram.currentTrack.nextStation();
                 tram.onStation = true;
                 // in en uitladen van mensen
                 tram.detrain();
@@ -159,8 +149,8 @@ namespace TramSimulator
             {
                 //als de volgende tram op het zelfde traject zit en minder dan 40 seconde gelden is vertrokken van een station
                 //dan vertrekt de tram pas over (40 sec - het verschil)
-                if (tram.nextTram.currentTrack == tram.currentTrack && (time - tram.nextTram.departureTime < 40))
-                    queue.addEvent(new TramExpDeparture(time + (40 - (time - tram.nextTram.departureTime)), tram));
+                if (tram.nextTram().currentTrack == tram.currentTrack && (time - tram.nextTram().departureTime < 40))
+                    queue.addEvent(new TramExpDeparture(time + (40 - (time - tram.nextTram().departureTime)), tram));
                 else
                     queue.addEvent(new TramDeparture(time, tram));
             }
@@ -181,11 +171,11 @@ namespace TramSimulator
                 tram.departureTime = time;
                 // als de vorige tram nog wacht op de tram dan 
                 //kan de volgende op het station komen na de queDelay die misschien 0 is ofzo geen idee
-                if (tram.previousTram.waitingOnNextTram)
+                if (tram.previousTram().waitingOnNextTram)
                 {
-                    tram.previousTram.waitingOnNextTram = false;
+                    tram.previousTram().waitingOnNextTram = false;
                     double queueDelay = 10;//Hoe lang het duurt om op het station te komen als er een voor hem was
-                    queue.addEvent(new TramExpArrival(time + queueDelay, tram.previousTram));
+                    queue.addEvent(new TramExpArrival(time + queueDelay, tram.previousTram()));
                 }
                 queue.addEvent(new TramExpArrival(time + tram.currentTrack.drivingTime(), tram));
             }
@@ -202,10 +192,10 @@ namespace TramSimulator
             }
             public Event next()
             {
-                double minTime = Int32.MaxValue;
-                int index = -1;
-                Event e = null;
-                for (int i=0; i < eventList.Count; i++)
+                double minTime = eventList[0].startTime;
+                int index = 0;
+                Event e = eventList[0];
+                for (int i=1; i < eventList.Count; i++)
                 {
                     if( eventList[i].startTime < minTime) {
                         index = i;
@@ -246,16 +236,17 @@ namespace TramSimulator
         // State of Tram includes station i and if it is on track between i and i+1
         class Tram
         {
-            public Tram nextTram;
-            public Tram previousTram;
+
             public Station currentTrack;
             public bool onStation;
             public bool waitingOnNextTram = false;
             public double departureTime;
             int capacity = 420;
+            int index;
             public List<Person> personsOnTram;
-            public Tram()
+            public Tram(int index)
             {
+                this.index = index;
                 personsOnTram = new List<Person>();
 
             }
@@ -278,19 +269,33 @@ namespace TramSimulator
                 }
 
             }
+            public Tram nextTram() {
+                if ( 0 == index)
+                    return trams[trams.Length - 1];
+                else
+                    return trams[index -1];
+
+            }
+            public Tram previousTram() {
+                if (trams.Length - 1 == index)
+                    return trams[0];
+                else
+                    return trams[index + 1];
+            }
         }
         class Station
         {
             public Queue<Person> waitingPersons;
             public double arrivalRate;
-            public Station nextStation;
             public double avgDrivingTime;
+            public int index;
             public double detrainRate;
             public String name; // good to know for sanity check
-            public Station(String name, double arrivalRate, double avgDrivingTime, double detrainRate)
+            public Station(String name,int index, double arrivalRate, double avgDrivingTime, double detrainRate)
 
             {
                 this.name = name;
+                this.index = index;
                 this.avgDrivingTime = avgDrivingTime;
                 this.arrivalRate = arrivalRate;
                 this.detrainRate = detrainRate;
@@ -301,7 +306,12 @@ namespace TramSimulator
                 double drivingTime = avgDrivingTime;
                 return drivingTime;
             }
-
+            public Station nextStation() {
+                if (index == stations.Length - 1)
+                    return stations[0];
+                else
+                    return stations[index + 1];
+            }
 
         }
 
