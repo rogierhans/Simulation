@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TramSimulator
 {
-    class PassengerCount
+    public class PassengerCount
     {
         public string Trip { get; set; }
         public DateTime Date { get; set; }

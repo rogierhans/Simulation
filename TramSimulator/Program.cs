@@ -8,6 +8,9 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
+using TramSimulator.Events;
+using TramSimulator.States;
+
 namespace TramSimulator
 {
     class Program
@@ -16,8 +19,10 @@ namespace TramSimulator
 
 
         {
-            SimulationRun.run();
-            return;
+            //SimulationRun.run();
+            //return;
+            
+
             //We probably want a different method of input for the file paths
             Console.WriteLine("Enter a file path");
             String path = Console.ReadLine();
