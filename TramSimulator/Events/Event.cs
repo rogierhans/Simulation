@@ -9,13 +9,13 @@ namespace TramSimulator.Events
     //Class for events
     public class Event
     {
-        public double startTime;
+        public double StartTime { get; set; }
 
 
         public virtual void execute(SimulationState simState) { }
         public override String ToString()
         {
-            return startTime + "";
+            return StartTime + "";
         }
     }
 }

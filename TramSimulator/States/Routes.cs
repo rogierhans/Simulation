@@ -8,8 +8,8 @@ namespace TramSimulator.States
 {
     public class Routes
     {
-        List<Track> CentralToPR { get; set; }
-        List<Track> PRToCentral { get; set; }
+        public List<Track> CentralToPR { get; set; }
+        public List<Track> PRToCentral { get; set; }
 
         public Routes(List<Track> centralToPR, List<Track> prToCentral)
         {
@@ -51,6 +51,7 @@ namespace TramSimulator.States
         {
             this.From = from;
             this.To = to;
+            this.Trams = new List<int>();
         }
     }
 }

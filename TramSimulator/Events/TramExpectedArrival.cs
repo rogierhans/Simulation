@@ -11,13 +11,13 @@ namespace TramSimulator.Events
     //event voor tram expected arrival
     public class TramExpectedArrival : Event
     {
-        double _startTime;
         int _tramId;
         string _arrStation;
         public TramExpectedArrival(int tramId, double startTime, string arrStation)
         {
             this._tramId = tramId;
             this._arrStation = arrStation;
+            this.StartTime = startTime;
         }
         public override void execute(SimulationState simState)
         {
@@ -26,13 +26,13 @@ namespace TramSimulator.Events
             if (station.WaitingTrams.Count > 0 || station.TramIsStationed)
             {
                 station.WaitingTrams.Enqueue(tram);
-                Event e = new TramExpectedArrival(tram.TramId, Generate.negexp(simState.Time + 60), _arrStation);
+                Event e = new TramExpectedArrival(tram.TramId, simState.Time + 60 + Generate.negexp(60), _arrStation);
                 simState.EventQueue.AddEvent(e);
             }
             else
             {
                 station.TramIsStationed = true;
-                Event e = new TramExpectedDeparture(_tramId, Generate.negexp(simState.Time + 60), _arrStation);
+                Event e = new TramExpectedDeparture(_tramId, simState.Time + 60 + Generate.negexp(60), _arrStation);
                 simState.EventQueue.AddEvent(e);
             }
             // Als zijn voorganger nog op de zelfde baan zit of op het volgede station
@@ -41,6 +41,11 @@ namespace TramSimulator.Events
               //  tram.waitingOnNextTram = true;
            // else
                 //queue.addEvent(new TramArrival(startTime, tram));
+        }
+
+        public override string ToString()
+        {
+            return "Tram expected arrival " + StartTime + " at " + _arrStation;
         }
     }
 }

@@ -19,8 +19,9 @@ namespace TramSimulator
 
 
         {
-            //SimulationRun.run();
-            //return;
+            Simulation sim = new Simulation(null);
+            sim.run(2, null, "monday", new string[] {"Central", "AZR", "PR"});
+            return;
             
 
             //We probably want a different method of input for the file paths

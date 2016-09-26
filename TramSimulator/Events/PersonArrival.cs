@@ -13,24 +13,22 @@ namespace TramSimulator.Events
     public class PersonArrival : Event
     {
         string _stationName;
-        double _startTime;
         public PersonArrival(double startTime, string stationName)
         {
-            this._startTime = startTime;
+            this.StartTime = startTime;
             this._stationName = stationName;
         }
         public override void execute(SimulationState simState)
         {
-            simState.Stations[_stationName].WaitingPersons.Enqueue(new Person(_startTime));
-            /*station.waitingPersons.Enqueue(new Person(time));
-            double newTime = time + (Generate.negexp(station.arrivalRate));
-            Event newEvent = new PersonArrival(newTime, station);
-            queue.addEvent(newEvent);*/
+            Station station = simState.Stations[_stationName];
+            station.WaitingPersons.Enqueue(new Person(StartTime));  
+            double newTime = simState.Time + 60 + (Generate.negexp(station.ArrivalRate));
+            simState.EventQueue.AddEvent(new PersonArrival(newTime, _stationName));
         }
 
         public override string ToString()
         {
-            return "Arrived " + startTime + " at " + _stationName;
+            return "Person Arrived " + StartTime + " at " + _stationName;
         }
     }
 }

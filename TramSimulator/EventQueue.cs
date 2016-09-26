@@ -13,23 +13,30 @@ namespace TramSimulator
     // SortedList en dergelijke zorgden voor problemen
     public class EventQueue
     {
-        public SortedList<double, Event> eventList = new SortedList<double, Event>();
+        public List<Event> EventList { get; private set; }
 
-        public void AddEvent(Event e)
+        public EventQueue()
         {
-            eventList.Add(e.startTime, e);
-        }
-
-        public Event Next()
-        {
-            Event e = eventList.Values[0];
-            eventList.RemoveAt(0);
-            return e;
+            this.EventList = new List<Event>();
         }
 
         public bool HasEvent()
         {
-            return eventList.Count > 0;
+            return EventList.Count > 0;
+        }
+
+        public void AddEvent(Event e)
+        {
+            EventList.Add(e);
+        }
+        public Event Next()
+        {
+            int index = EventList.Select((val, i) => new { Val = val, Index = i })
+                                 .Aggregate((min,next) => min.Val.StartTime < next.Val.StartTime ? min : next)
+                                 .Index;
+            Event e = EventList[index];
+            EventList.RemoveAt(index);
+            return e;
         }
     }
 }
