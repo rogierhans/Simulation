@@ -50,7 +50,7 @@ namespace TramSimulator.States
             nextTrack.Trams.Insert(0,tramId);
         }
 
-        private Track GetTrack(int tramId)
+        public Track GetTrack(int tramId)
         {
             var track1 = CentralToPR.Find(x => x.Trams.Contains(tramId));
             var track2 = PRToCentral.Find(x => x.Trams.Contains(tramId));

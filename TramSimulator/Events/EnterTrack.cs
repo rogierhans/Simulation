@@ -29,6 +29,8 @@ namespace TramSimulator.Events
             tram.State = Tram.TramState.AtStation;
             //Add an initial event
             var eventQueue = simState.EventQueue;
+
+            simState.TimeTables[_tramId] = new TimeTable(simState.Rates,simState.Routes,StartTime);
             eventQueue.AddEvent(new TramExpectedDeparture(_tramId, StartTime, _station));
         }
 

@@ -22,6 +22,11 @@ namespace TramSimulator
             throw new NotImplementedException();
         }
 
+        public double AvgTramArrival(string depStation, string arrStation)
+        {
+            throw new NotImplementedException();
+        }
+
         public double DelayRate(string station)
         {
             throw new NotImplementedException();

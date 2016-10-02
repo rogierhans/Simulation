@@ -98,10 +98,10 @@ namespace TramSimulator
 
             var routes = new Routes(centralToPR, prToCentral);
 
-            
+            var timeTables = new Dictionary<int, TimeTable>();
 
 
-            return new SimulationState(trams, stations, eventQueue, routes, rates);
+            return new SimulationState(trams, stations, eventQueue, routes, rates, timeTables);
         }
 
         static private List<Track> GenerateRoute(string[] stationNames)
