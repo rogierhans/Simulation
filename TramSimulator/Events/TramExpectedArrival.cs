@@ -23,29 +23,27 @@ namespace TramSimulator.Events
         {
             var station = simState.Stations[_arrStation];
             var tram = simState.Trams[_tramId];
+            //Tram has to wait until station is empty
             if (station.WaitingTrams.Count > 0 || station.TramIsStationed)
             {
-                station.WaitingTrams.Enqueue(tram);
-                Event e = new TramExpectedArrival(tram.TramId, simState.Time + 60 + Generate.negexp(60), _arrStation);
-                simState.EventQueue.AddEvent(e);
+                station.WaitingTrams.Enqueue(_tramId);
             }
             else
             {
                 station.TramIsStationed = true;
-                Event e = new TramExpectedDeparture(_tramId, simState.Time + 60 + Generate.negexp(60), _arrStation);
+                tram.State = Tram.TramState.AtStation;
+                tram.Station = _arrStation;
+
+                var emptyRate = simState.Rates.TramEmptyRate(_arrStation);
+                var fillRate = simState.Rates.TramFillRate(_arrStation);
+                Event e = new TramExpectedDeparture(_tramId, emptyRate + fillRate, _arrStation);
                 simState.EventQueue.AddEvent(e);
             }
-            // Als zijn voorganger nog op de zelfde baan zit of op het volgede station
-            // dan kan de trein niet aankomen en wacht hij totdat de andere vertrekt
-           // if (tram.nextTram().currentTrack == tram.currentTrack || (tram.nextTram().currentTrack.nextStation() == tram.currentTrack && tram.nextTram().onStation))
-              //  tram.waitingOnNextTram = true;
-           // else
-                //queue.addEvent(new TramArrival(startTime, tram));
         }
 
         public override string ToString()
         {
-            return "Tram expected arrival " + StartTime + " at " + _arrStation;
+            return "Tram " + _tramId + " expected arrival " + StartTime + " at " + _arrStation;
         }
     }
 }

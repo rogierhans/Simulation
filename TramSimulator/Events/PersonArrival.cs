@@ -22,7 +22,7 @@ namespace TramSimulator.Events
         {
             Station station = simState.Stations[_stationName];
             station.WaitingPersons.Enqueue(new Person(StartTime));  
-            double newTime = simState.Time + 60 + (Generate.negexp(station.ArrivalRate));
+            double newTime = simState.Rates.PersonArrivalRate(_stationName);
             simState.EventQueue.AddEvent(new PersonArrival(newTime, _stationName));
         }
 

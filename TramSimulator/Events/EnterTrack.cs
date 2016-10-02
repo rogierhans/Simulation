@@ -22,10 +22,14 @@ namespace TramSimulator.Events
 
         public override void execute(SimulationState simState)
         {
+            //Insert the tram into the route
             var route = simState.Routes.PRToCentral;
             route[0].Trams.Add(_tramId);
+            var tram = simState.Trams[_tramId];
+            tram.State = Tram.TramState.AtStation;
+            //Add an initial event
             var eventQueue = simState.EventQueue;
-            eventQueue.AddEvent(new TramExpectedDeparture(_tramId, simState.Time, _station));
+            eventQueue.AddEvent(new TramExpectedDeparture(_tramId, StartTime, _station));
         }
 
         public override string ToString()

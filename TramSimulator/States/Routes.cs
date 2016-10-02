@@ -26,10 +26,28 @@ namespace TramSimulator.States
             else { return t.Trams[index + 1]; }
         }
 
-        public string NextStation(int tramId)
+        public string NextStation(int tramId, string station)
         {
             Track t = GetTrack(tramId);
-            return t.To;
+            if (t.To == station)
+            {
+                return GetNextTrack(station, t.From).To;
+            }
+            else
+            {
+                return t.To;
+            }
+        }
+
+        public void MoveToNextTrack(int tramId, string depStation)
+        {
+            Track t = GetTrack(tramId);
+            //Remove the tram if it was previously on a track
+            if(t != null) { t.Trams = t.Trams.Take(t.Trams.Count - 1).ToList(); }
+
+            //Find the next track and insert it into the next track
+            Track nextTrack = GetNextTrack(depStation, t.From);
+            nextTrack.Trams.Insert(0,tramId);
         }
 
         private Track GetTrack(int tramId)
@@ -38,6 +56,11 @@ namespace TramSimulator.States
             var track2 = PRToCentral.Find(x => x.Trams.Contains(tramId));
 
             return (track1 == null ? track2 : track1);
+        }
+
+        private Track GetNextTrack(string depStation, string prevStation)
+        {
+            return CentralToPR.Union(PRToCentral).First(x => x.From == depStation && x.To != prevStation);
         }
     }
 
